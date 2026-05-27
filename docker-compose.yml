@@ -1,0 +1,75 @@
+services:
+  frontend:
+    build:
+      context: .
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env.example
+    depends_on:
+      - iot-service
+      - video-analysis-service
+      - ml-analytics-service
+
+  iot-service:
+    build:
+      context: ../bulutproje3-iot-service
+    ports:
+      - "8001:8000"
+    environment:
+      SERVICE_NAME: iot-service
+      AWS_REGION: eu-central-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      DYNAMODB_ENDPOINT_URL: http://dynamodb-local:8000
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+    depends_on:
+      - dynamodb-local
+      - mosquitto
+
+  video-analysis-service:
+    build:
+      context: ../bulutproje4-video-analysis-service
+    ports:
+      - "8002:8000"
+    environment:
+      SERVICE_NAME: video-analysis-service
+      AWS_REGION: eu-central-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      DYNAMODB_ENDPOINT_URL: http://dynamodb-local:8000
+    depends_on:
+      - dynamodb-local
+
+  ml-analytics-service:
+    build:
+      context: ../bulutproje5-ml-analytics-service
+    ports:
+      - "8003:8000"
+    environment:
+      SERVICE_NAME: ml-analytics-service
+      AWS_REGION: eu-central-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      DYNAMODB_ENDPOINT_URL: http://dynamodb-local:8000
+      IOT_SERVICE_URL: http://iot-service:8000
+      VIDEO_SERVICE_URL: http://video-analysis-service:8000
+    depends_on:
+      - dynamodb-local
+      - iot-service
+      - video-analysis-service
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - "8000:8000"
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
