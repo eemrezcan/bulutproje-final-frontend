@@ -1,12 +1,17 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppLayout } from "./layout/AppLayout";
+import { DashboardPage } from "./pages/DashboardPage";
+import { IotPage } from "./pages/IotPage";
+
 export default function App() {
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
-      <h1 className="text-2xl font-semibold">Akilli Sehir Yonetim Platformu</h1>
-      <p className="mt-2 text-sm text-slate-600">
-        Frontend iskeleti hazir. Dashboard, IoT, Video ve ML ekranlari bu uygulamada
-        toplanacak.
-      </p>
-    </main>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/iot" element={<IotPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 }
-
