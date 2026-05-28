@@ -1,9 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Activity, Gauge, LayoutDashboard, RadioTower } from "lucide-react";
+import { Activity, Gauge, LayoutDashboard, RadioTower, Video } from "lucide-react";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/iot", label: "IoT", icon: RadioTower }
+  { to: "/iot", label: "IoT", icon: RadioTower },
+  { to: "/video", label: "Video", icon: Video }
 ];
 
 export function AppLayout() {
@@ -42,7 +43,7 @@ export function AppLayout() {
           <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-950">Akilli Sehir Yonetim Platformu</p>
-              <p className="truncate text-xs text-slate-500">IoT Service canli veri akisi</p>
+              <p className="truncate text-xs text-slate-500">IoT ve Video Service canli veri akisi</p>
             </div>
             <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
               <Activity className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />

@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CloudSun, RadioTower, Thermometer, Wind } from "lucide-react";
+import { AlertTriangle, CloudSun, RadioTower, Thermometer, Video, Wind } from "lucide-react";
 import { getHealth, getLatestReadings, getSensors } from "../api/iot";
+import { getCameras, getLatestAnalysis, getVideoHealth } from "../api/video";
 import { ErrorState, LoadingState } from "../components/DataState";
 import { MetricCard } from "../components/MetricCard";
 import { SensorMap } from "../components/SensorMap";
 import { ConnectionBadge, StatusBadge } from "../components/StatusBadge";
-import type { RiskLevel, SensorReading } from "../types";
+import type { CrowdLevel, RiskLevel, SensorReading } from "../types";
 
 function average(values: number[]) {
   if (values.length === 0) {
@@ -27,6 +28,16 @@ function riskScore(readings: SensorReading[]) {
   return readings.reduce((total, reading) => total + weights[reading.status_level], 0);
 }
 
+function crowdTone(level?: CrowdLevel) {
+  if (level === "critical") {
+    return "text-red-700";
+  }
+  if (level === "high") {
+    return "text-amber-700";
+  }
+  return "text-slate-600";
+}
+
 export function DashboardPage() {
   const sensorsQuery = useQuery({ queryKey: ["iot", "sensors"], queryFn: getSensors });
   const latestQuery = useQuery({
@@ -39,10 +50,27 @@ export function DashboardPage() {
     queryFn: getHealth,
     refetchInterval: 10000
   });
+  const videoHealthQuery = useQuery({
+    queryKey: ["video", "health"],
+    queryFn: getVideoHealth,
+    refetchInterval: 10000
+  });
+  const camerasQuery = useQuery({ queryKey: ["video", "cameras"], queryFn: getCameras });
+  const videoLatestQuery = useQuery({
+    queryKey: ["video", "analysis", "latest"],
+    queryFn: getLatestAnalysis,
+    refetchInterval: 3000
+  });
 
   const sensors = sensorsQuery.data ?? [];
   const latestReadings = latestQuery.data ?? [];
+  const cameras = camerasQuery.data ?? [];
+  const videoLatest = videoLatestQuery.data ?? [];
   const activeSensors = sensors.filter((sensor) => sensor.status === "active").length;
+  const activeCameras = cameras.filter((camera) => camera.status === "active").length;
+  const highCrowdCameras = videoLatest.filter(
+    (event) => event.crowd_level === "high" || event.crowd_level === "critical"
+  ).length;
   const avgTemperature = average(latestReadings.map((reading) => reading.temperature));
   const avgAirQuality = average(latestReadings.map((reading) => reading.air_quality_index));
   const riskyZones = latestReadings.filter((reading) => reading.status_level !== "normal").length;
@@ -61,6 +89,7 @@ export function DashboardPage() {
         </div>
         <div className="flex flex-wrap gap-2">
           <ConnectionBadge active={healthQuery.data?.status === "ok"} label="IoT API" />
+          <ConnectionBadge active={videoHealthQuery.data?.status === "ok"} label="Video API" />
           <ConnectionBadge active={healthQuery.data?.mqtt_connected ?? false} label="MQTT" />
           <ConnectionBadge active={healthQuery.data?.simulator_running ?? false} label="Simulator" />
         </div>
@@ -71,7 +100,7 @@ export function DashboardPage() {
 
       {!isInitialLoading && !hasError ? (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <MetricCard
               title="Aktif sensor"
               value={`${activeSensors}/${sensors.length}`}
@@ -100,9 +129,16 @@ export function DashboardPage() {
               icon={AlertTriangle}
               tone={riskyZones > 0 ? "amber" : "green"}
             />
+            <MetricCard
+              title="Aktif kamera"
+              value={`${activeCameras}/${cameras.length}`}
+              detail={`${highCrowdCameras} kamera high/critical`}
+              icon={Video}
+              tone={highCrowdCameras > 0 ? "amber" : "green"}
+            />
           </section>
 
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
             <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
@@ -138,6 +174,42 @@ export function DashboardPage() {
                 ))}
               </div>
             </div>
+          </section>
+
+          <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-4">
+              <div>
+                <h2 className="text-base font-semibold text-slate-950">Video ozeti</h2>
+                <p className="text-sm text-slate-500">Son video analizlerinden operasyon listesi</p>
+              </div>
+              <ConnectionBadge active={videoHealthQuery.data?.analyzer_running ?? false} label="Analyzer" />
+            </div>
+            {videoLatestQuery.isError || camerasQuery.isError ? (
+              <div className="p-4">
+                <ErrorState message="Video ozeti alinamadi." />
+              </div>
+            ) : (
+              <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-5">
+                {videoLatest.slice(0, 5).map((event) => (
+                  <div key={event.camera_id} className="rounded-md border border-slate-200 p-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-medium text-slate-950">{event.zone}</p>
+                      <span className={`shrink-0 text-xs font-semibold capitalize ${crowdTone(event.crowd_level)}`}>
+                        {event.crowd_level}
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
+                      <span>Kisi {event.people_count}</span>
+                      <span>Arac {event.vehicle_count}</span>
+                    </div>
+                    <p className="mt-2 truncate text-xs text-slate-500">{event.recognition_labels.join(", ")}</p>
+                  </div>
+                ))}
+                {!videoLatestQuery.isLoading && videoLatest.length === 0 ? (
+                  <p className="text-sm text-slate-500">Video analizi bekleniyor.</p>
+                ) : null}
+              </div>
+            )}
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
