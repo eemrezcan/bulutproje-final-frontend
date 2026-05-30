@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CloudSun, RadioTower, Thermometer, Video, Wind } from "lucide-react";
+import { AlertTriangle, BrainCircuit, CloudSun, RadioTower, Thermometer, TrendingUp, Video, Wind } from "lucide-react";
 import { getHealth, getLatestReadings, getSensors } from "../api/iot";
+import { getLatestPredictions, getMlHealth, getModelStatus } from "../api/ml";
 import { getCameras, getLatestAnalysis, getVideoHealth } from "../api/video";
 import { ErrorState, LoadingState } from "../components/DataState";
 import { MetricCard } from "../components/MetricCard";
 import { SensorMap } from "../components/SensorMap";
 import { ConnectionBadge, StatusBadge } from "../components/StatusBadge";
-import type { CrowdLevel, RiskLevel, SensorReading } from "../types";
+import type { CrowdLevel, Prediction, RiskLevel, SensorReading } from "../types";
 
 function average(values: number[]) {
   if (values.length === 0) {
@@ -38,6 +39,27 @@ function crowdTone(level?: CrowdLevel) {
   return "text-slate-600";
 }
 
+function mlRiskTone(level?: RiskLevel): "green" | "amber" | "red" {
+  if (level === "critical") {
+    return "red";
+  }
+  if (level === "warning") {
+    return "amber";
+  }
+  return "green";
+}
+
+function latestMlByZone(predictions: Prediction[]) {
+  const seen = new Set<string>();
+  return predictions.filter((prediction) => {
+    if (seen.has(prediction.zone)) {
+      return false;
+    }
+    seen.add(prediction.zone);
+    return true;
+  });
+}
+
 export function DashboardPage() {
   const sensorsQuery = useQuery({ queryKey: ["iot", "sensors"], queryFn: getSensors });
   const latestQuery = useQuery({
@@ -61,11 +83,27 @@ export function DashboardPage() {
     queryFn: getLatestAnalysis,
     refetchInterval: 3000
   });
+  const mlHealthQuery = useQuery({
+    queryKey: ["ml", "health"],
+    queryFn: getMlHealth,
+    refetchInterval: 30000
+  });
+  const mlModelQuery = useQuery({
+    queryKey: ["ml", "model", "status"],
+    queryFn: getModelStatus,
+    refetchInterval: 30000
+  });
+  const mlLatestQuery = useQuery({
+    queryKey: ["ml", "predictions", "latest"],
+    queryFn: getLatestPredictions,
+    refetchInterval: 10000
+  });
 
   const sensors = sensorsQuery.data ?? [];
   const latestReadings = latestQuery.data ?? [];
   const cameras = camerasQuery.data ?? [];
   const videoLatest = videoLatestQuery.data ?? [];
+  const mlLatest = latestMlByZone(mlLatestQuery.data ?? []);
   const activeSensors = sensors.filter((sensor) => sensor.status === "active").length;
   const activeCameras = cameras.filter((camera) => camera.status === "active").length;
   const highCrowdCameras = videoLatest.filter(
@@ -76,6 +114,10 @@ export function DashboardPage() {
   const riskyZones = latestReadings.filter((reading) => reading.status_level !== "normal").length;
   const cityRisk = riskScore(latestReadings);
   const cityRiskLevel: RiskLevel = cityRisk >= 4 ? "critical" : cityRisk >= 2 ? "warning" : "normal";
+  const avgMlRisk = average(mlLatest.map((prediction) => prediction.risk_score));
+  const mlCriticalCount = mlLatest.filter((prediction) => prediction.risk_level === "critical").length;
+  const mlWarningCount = mlLatest.filter((prediction) => prediction.risk_level === "warning").length;
+  const riskiestMlZone = [...mlLatest].sort((first, second) => second.risk_score - first.risk_score)[0];
 
   const isInitialLoading = sensorsQuery.isLoading || latestQuery.isLoading;
   const hasError = sensorsQuery.isError || latestQuery.isError;
@@ -90,6 +132,7 @@ export function DashboardPage() {
         <div className="flex flex-wrap gap-2">
           <ConnectionBadge active={healthQuery.data?.status === "ok"} label="IoT API" />
           <ConnectionBadge active={videoHealthQuery.data?.status === "ok"} label="Video API" />
+          <ConnectionBadge active={mlHealthQuery.data?.status === "ok"} label="ML API" />
           <ConnectionBadge active={healthQuery.data?.mqtt_connected ?? false} label="MQTT" />
           <ConnectionBadge active={healthQuery.data?.simulator_running ?? false} label="Simulator" />
         </div>
@@ -100,7 +143,7 @@ export function DashboardPage() {
 
       {!isInitialLoading && !hasError ? (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
             <MetricCard
               title="Aktif sensor"
               value={`${activeSensors}/${sensors.length}`}
@@ -135,6 +178,13 @@ export function DashboardPage() {
               detail={`${highCrowdCameras} kamera high/critical`}
               icon={Video}
               tone={highCrowdCameras > 0 ? "amber" : "green"}
+            />
+            <MetricCard
+              title="ML risk skoru"
+              value={Math.round(avgMlRisk)}
+              detail={riskiestMlZone ? `En riskli: ${riskiestMlZone.zone}` : "Tahmin bekleniyor"}
+              icon={TrendingUp}
+              tone={mlRiskTone(riskiestMlZone?.risk_level)}
             />
           </section>
 
@@ -179,6 +229,58 @@ export function DashboardPage() {
           <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-4">
               <div>
+                <h2 className="text-base font-semibold text-slate-950">ML risk ozeti</h2>
+                <p className="text-sm text-slate-500">Son tahminlerden karar destek gorunumu</p>
+              </div>
+              <ConnectionBadge active={mlModelQuery.data?.model_ready ?? false} label="Model" />
+            </div>
+            {mlLatestQuery.isError || mlModelQuery.isError ? (
+              <div className="p-4">
+                <ErrorState message="ML ozeti alinamadi." />
+              </div>
+            ) : (
+              <div className="grid gap-3 p-4 lg:grid-cols-[minmax(240px,0.55fr)_minmax(0,1.45fr)]">
+                <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                  <div className="rounded-md border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">Sehir genel risk</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">{Math.round(avgMlRisk)}</p>
+                  </div>
+                  <div className="rounded-md border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">Critical / warning</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">
+                      {mlCriticalCount}/{mlWarningCount}
+                    </p>
+                  </div>
+                  <div className="rounded-md border border-slate-200 p-3">
+                    <p className="text-xs text-slate-500">En riskli bolge</p>
+                    <p className="mt-1 truncate text-2xl font-semibold text-slate-950">{riskiestMlZone?.zone ?? "-"}</p>
+                  </div>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {mlLatest.slice(0, 4).map((prediction) => (
+                    <div key={prediction.zone} className="rounded-md border border-slate-200 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-medium text-slate-950">{prediction.zone}</p>
+                        <StatusBadge level={prediction.risk_level} />
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-500">
+                        <span>Risk {prediction.risk_score}</span>
+                        <span>{prediction.predicted_temperature.toFixed(1)} C</span>
+                      </div>
+                      <p className="mt-2 truncate text-xs text-slate-500">{prediction.recommendation}</p>
+                    </div>
+                  ))}
+                  {!mlLatestQuery.isLoading && mlLatest.length === 0 ? (
+                    <p className="text-sm text-slate-500">ML tahmini bekleniyor.</p>
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-4">
+              <div>
                 <h2 className="text-base font-semibold text-slate-950">Video ozeti</h2>
                 <p className="text-sm text-slate-500">Son video analizlerinden operasyon listesi</p>
               </div>
@@ -218,7 +320,7 @@ export function DashboardPage() {
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase text-slate-500">
+                <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
                   <tr>
                     <th className="px-4 py-3">Bolge</th>
                     <th className="px-4 py-3">Sicaklik</th>

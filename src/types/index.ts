@@ -80,3 +80,56 @@ export interface AnalyzerCommandState {
   running: boolean;
   interval_seconds: number;
 }
+
+export interface MlHealthResponse {
+  service: string;
+  status: string;
+  model_ready?: boolean;
+}
+
+export interface ModelStatus {
+  trained: boolean;
+  training_samples: number;
+  trained_at: string | null;
+  model_ready: boolean;
+  model_path?: string;
+}
+
+export interface PredictionInputSummary {
+  temperature: number;
+  humidity: number;
+  air_quality_index: number;
+  traffic_level: number;
+  people_count: number;
+  vehicle_count: number;
+  motion_level: MotionLevel;
+  crowd_level: CrowdLevel;
+}
+
+export interface Prediction {
+  zone: CityZone;
+  prediction_timestamp: string;
+  prediction_for: string;
+  predicted_temperature: number;
+  predicted_crowd_level: CrowdLevel;
+  risk_score: number;
+  risk_level: RiskLevel;
+  recommendation: string;
+  input_summary: PredictionInputSummary;
+}
+
+export interface ZoneRisk {
+  zone: CityZone;
+  risk_score: number;
+  risk_level: RiskLevel;
+  recommendation: string;
+  prediction_for?: string;
+  prediction_timestamp?: string;
+}
+
+export interface ModelTrainResponse {
+  trained: boolean;
+  training_samples: number;
+  trained_at: string | null;
+  model_ready: boolean;
+}

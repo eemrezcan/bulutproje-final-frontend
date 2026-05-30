@@ -153,7 +153,7 @@ export function IotPage() {
             className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Play className="h-4 w-4" aria-hidden="true" />
-            Start
+            Baslat
           </button>
           <button
             type="button"
@@ -162,7 +162,7 @@ export function IotPage() {
             className="inline-flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Pause className="h-4 w-4" aria-hidden="true" />
-            Stop
+            Durdur
           </button>
         </div>
       </div>

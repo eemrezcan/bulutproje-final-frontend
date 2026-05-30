@@ -198,7 +198,7 @@ export function VideoPage() {
             className="inline-flex items-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Play className="h-4 w-4" aria-hidden="true" />
-            Start
+            Baslat
           </button>
           <button
             type="button"
@@ -207,7 +207,7 @@ export function VideoPage() {
             className="inline-flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Pause className="h-4 w-4" aria-hidden="true" />
-            Stop
+            Durdur
           </button>
           <button
             type="button"
@@ -329,7 +329,7 @@ export function VideoPage() {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <p className="mb-2 text-xs font-medium uppercase text-slate-500">Recognition labels</p>
+                  <p className="mb-2 text-xs font-medium text-slate-500">Tanimlama etiketleri</p>
                   <div className="flex flex-wrap gap-2">
                     {(selectedLatest?.recognition_labels ?? []).map((label) => (
                       <span key={label} className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
