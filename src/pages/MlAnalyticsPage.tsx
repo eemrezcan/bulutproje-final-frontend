@@ -141,6 +141,7 @@ export function MlAnalyticsPage() {
   const criticalCount = zonePredictions.filter((prediction) => prediction.risk_level === "critical").length;
   const warningCount = zonePredictions.filter((prediction) => prediction.risk_level === "warning").length;
   const riskiestPrediction = [...zonePredictions].sort((first, second) => second.risk_score - first.risk_score)[0];
+  const selectedPrediction = zonePredictions.find((prediction) => prediction.zone === selectedZone);
 
   useEffect(() => {
     if (!zonePredictions.some((prediction) => prediction.zone === selectedZone) && zonePredictions[0]) {
@@ -162,7 +163,7 @@ export function MlAnalyticsPage() {
       <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-950">ML Analytics</h1>
-          <p className="mt-1 text-sm text-slate-500">Tahminler, risk skorlari ve model operasyonlari</p>
+          <p className="mt-1 text-sm text-slate-500">IoT ve video verilerinden 60 dk sonraki risk tahmini</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ConnectionBadge active={healthQuery.data?.status === "ok"} label="ML API" />
@@ -231,8 +232,8 @@ export function MlAnalyticsPage() {
             <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <h2 className="truncate text-base font-semibold text-slate-950">Model status</h2>
-                  <p className="text-sm text-slate-500">30 saniyede bir yenilenir</p>
+                  <h2 className="truncate text-base font-semibold text-slate-950">Model ve veri hatti</h2>
+                  <p className="text-sm text-slate-500">IoT + Video girdisi, ML risk ciktisi</p>
                 </div>
                 <BrainCircuit className="h-5 w-5 text-sky-600" aria-hidden="true" />
               </div>
@@ -252,6 +253,14 @@ export function MlAnalyticsPage() {
                 <div className="rounded-md bg-slate-50 p-3">
                   <p className="text-xs text-slate-500">model_ready</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">{String(modelQuery.data?.model_ready ?? false)}</p>
+                </div>
+                <div className="rounded-md bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">girdi_kaynagi</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-slate-950">IoT + Video API</p>
+                </div>
+                <div className="rounded-md bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">tahmin_ufku</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-slate-950">60 dakika</p>
                 </div>
               </div>
             </div>
@@ -302,6 +311,98 @@ export function MlAnalyticsPage() {
               ) : null}
             </div>
           </section>
+
+          {selectedPrediction ? (
+            <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-950">{selectedPrediction.zone} karar ozeti</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {formatDateTime(selectedPrediction.prediction_timestamp)} uretildi,{" "}
+                      {formatDateTime(selectedPrediction.prediction_for)} icin tahmin
+                    </p>
+                  </div>
+                  <StatusBadge level={selectedPrediction.risk_level} />
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">risk_score</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">{selectedPrediction.risk_score}</p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">predicted_temperature</p>
+                    <p className="mt-1 text-2xl font-semibold text-slate-950">
+                      {selectedPrediction.predicted_temperature.toFixed(1)} C
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">predicted_crowd</p>
+                    <div className="mt-2">
+                      <CrowdBadge level={selectedPrediction.predicted_crowd_level} />
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 rounded-md bg-sky-50 px-3 py-2 text-sm leading-6 text-sky-900">
+                  {selectedPrediction.recommendation}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                <h2 className="text-base font-semibold text-slate-950">Model girdisi</h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">IoT sicaklik</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {selectedPrediction.input_summary.temperature.toFixed(1)} C
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">IoT AQI</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {selectedPrediction.input_summary.air_quality_index}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">IoT trafik</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {selectedPrediction.input_summary.traffic_level}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">Video kalabalik</p>
+                    <div className="mt-1">
+                      <CrowdBadge level={selectedPrediction.input_summary.crowd_level} />
+                    </div>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">Video kisi</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {selectedPrediction.input_summary.people_count}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">Video arac</p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {selectedPrediction.input_summary.vehicle_count}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">Video hareket</p>
+                    <p className="mt-1 text-sm font-semibold capitalize text-slate-950">
+                      {selectedPrediction.input_summary.motion_level}
+                    </p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <p className="text-xs text-slate-500">risk_level</p>
+                    <p className="mt-1 text-sm font-semibold capitalize text-slate-950">
+                      {selectedPrediction.risk_level}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-4 border-b border-slate-200 p-4 lg:flex-row lg:items-center lg:justify-between">
