@@ -1,0 +1,56 @@
+{
+  "family": "smart-city-final-video-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-video-task-role",
+  "containerDefinitions": [
+    {
+      "name": "video-service",
+      "image": "775755739642.dkr.ecr.eu-central-1.amazonaws.com/smart-city-final/video-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SERVICE_NAME",
+          "value": "video-analysis-service"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "eu-central-1"
+        },
+        {
+          "name": "PUBLIC_BASE_URL",
+          "value": "https://d1k4ey8nhx4dtb.cloudfront.net/api/video"
+        },
+        {
+          "name": "ANALYZER_AUTOSTART",
+          "value": "false"
+        },
+        {
+          "name": "ANALYZER_INTERVAL_SECONDS",
+          "value": "5"
+        },
+        {
+          "name": "DYNAMODB_READY_TIMEOUT_SECONDS",
+          "value": "60"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smart-city-final/video-service",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

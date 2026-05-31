@@ -1,0 +1,64 @@
+{
+  "family": "smart-city-final-ml-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-ml-task-role",
+  "containerDefinitions": [
+    {
+      "name": "ml-service",
+      "image": "775755739642.dkr.ecr.eu-central-1.amazonaws.com/smart-city-final/ml-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SERVICE_NAME",
+          "value": "ml-analytics-service"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "eu-central-1"
+        },
+        {
+          "name": "IOT_SERVICE_URL",
+          "value": "http://smart-city-final-alb-1917068080.eu-central-1.elb.amazonaws.com/api/iot"
+        },
+        {
+          "name": "VIDEO_SERVICE_URL",
+          "value": "http://smart-city-final-alb-1917068080.eu-central-1.elb.amazonaws.com/api/video"
+        },
+        {
+          "name": "ML_PREDICTIONS_TABLE",
+          "value": "ml_predictions"
+        },
+        {
+          "name": "MODEL_DIR",
+          "value": "app/artifacts"
+        },
+        {
+          "name": "PREDICTION_HORIZON_MINUTES",
+          "value": "60"
+        },
+        {
+          "name": "DYNAMODB_READY_TIMEOUT_SECONDS",
+          "value": "60"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smart-city-final/ml-service",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

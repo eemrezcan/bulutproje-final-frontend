@@ -1,0 +1,52 @@
+{
+  "family": "smart-city-final-iot-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::775755739642:role/smart-city-final-iot-task-role",
+  "containerDefinitions": [
+    {
+      "name": "iot-service",
+      "image": "775755739642.dkr.ecr.eu-central-1.amazonaws.com/smart-city-final/iot-service:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SERVICE_NAME",
+          "value": "iot-service"
+        },
+        {
+          "name": "AWS_REGION",
+          "value": "eu-central-1"
+        },
+        {
+          "name": "MQTT_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "SIMULATOR_AUTOSTART",
+          "value": "false"
+        },
+        {
+          "name": "SIMULATOR_INTERVAL_SECONDS",
+          "value": "3"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/smart-city-final/iot-service",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
