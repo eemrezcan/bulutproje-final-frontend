@@ -165,6 +165,8 @@ export function VideoPage() {
     () => new Map(latestEvents.map((event) => [event.camera_id, event])),
     [latestEvents]
   );
+  const isLiveImageStream =
+    streamQuery.data?.media_type.includes("multipart") || streamQuery.data?.mode.includes("mjpeg");
 
   const chartData = [...(historyQuery.data ?? [])].reverse().map((event) => ({
     time: formatTime(event.timestamp),
@@ -270,35 +272,51 @@ export function VideoPage() {
               <div className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <h2 className="truncate text-base font-semibold text-slate-950">{selectedCamera?.name}</h2>
-                  <p className="truncate text-sm text-slate-500">
-                    {streamQuery.data?.mode ?? "looped_synthetic_media"} - {streamQuery.data?.media_type ?? "video/mp4"}
-                  </p>
+                  <p className="truncate text-sm text-slate-500">{selectedCamera?.zone} canli kamera akisi</p>
                 </div>
-                <ConnectionBadge active={streamQuery.data?.playable ?? false} label="Video stream" />
+                <ConnectionBadge active={streamQuery.data?.playable ?? false} label="Canli akis" />
               </div>
               <div className="bg-slate-950 p-3">
                 {streamQuery.isLoading ? (
-                  <div className="flex aspect-video items-center justify-center text-sm text-slate-300">Video yukleniyor</div>
+                  <div className="flex aspect-video items-center justify-center text-sm text-slate-300">Canli akis yukleniyor</div>
                 ) : streamQuery.isError || !streamQuery.data?.stream_url ? (
-                  <div className="flex aspect-video items-center justify-center text-sm text-slate-300">Video akisi alinamadi</div>
+                  <div className="flex aspect-video items-center justify-center text-sm text-slate-300">Canli kamera akisi alinamadi</div>
                 ) : (
-                  <div className="relative">
-                    <video
-                      key={streamQuery.data.stream_url}
-                      className="aspect-video w-full rounded-md bg-black object-cover"
-                      src={streamQuery.data.stream_url}
-                      crossOrigin="anonymous"
-                      loop
-                      muted
-                      controls
-                      autoPlay
-                      playsInline
-                      onLoadedData={() => setVideoError(false)}
-                      onError={() => setVideoError(true)}
-                    />
+                  <div className="relative overflow-hidden rounded-md bg-black">
+                    {isLiveImageStream ? (
+                      <img
+                        key={streamQuery.data.stream_url}
+                        className="aspect-video w-full bg-black object-cover"
+                        src={streamQuery.data.stream_url}
+                        alt={`${selectedCamera?.name ?? "Kamera"} canli akisi`}
+                        onLoad={() => setVideoError(false)}
+                        onError={() => setVideoError(true)}
+                      />
+                    ) : (
+                      <video
+                        key={streamQuery.data.stream_url}
+                        className="aspect-video w-full bg-black object-cover"
+                        src={streamQuery.data.stream_url}
+                        crossOrigin="anonymous"
+                        loop
+                        muted
+                        autoPlay
+                        playsInline
+                        onLoadedData={() => setVideoError(false)}
+                        onError={() => setVideoError(true)}
+                      />
+                    )}
+                    <div className="pointer-events-none absolute right-4 top-4 rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white shadow">
+                      {selectedCamera?.zone}
+                    </div>
+                    <div className="pointer-events-none absolute bottom-4 left-4 flex flex-wrap gap-2 rounded-md bg-black/65 px-3 py-2 text-xs font-medium text-white shadow">
+                      <span>Kisi {selectedLatest?.people_count ?? "-"}</span>
+                      <span>Arac {selectedLatest?.vehicle_count ?? "-"}</span>
+                      <span>Hareket {selectedLatest?.motion_level ?? "-"}</span>
+                    </div>
                     {videoError ? (
                       <div className="absolute inset-x-3 bottom-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 shadow-sm">
-                        Video kaynagi alindi, ancak tarayici bu medya kodlamasini oynatamadi.
+                        Canli kamera akisi alinamadi. Birazdan tekrar deneyin.
                       </div>
                     ) : null}
                   </div>

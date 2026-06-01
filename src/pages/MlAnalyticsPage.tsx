@@ -239,27 +239,27 @@ export function MlAnalyticsPage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">trained</p>
+                  <p className="text-xs text-slate-500">Model durumu</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">{String(modelQuery.data?.trained ?? false)}</p>
                 </div>
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">training_samples</p>
+                  <p className="text-xs text-slate-500">Egitim ornegi</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">{modelQuery.data?.training_samples ?? 0}</p>
                 </div>
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">trained_at</p>
+                  <p className="text-xs text-slate-500">Son egitim</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">{formatDateTime(modelQuery.data?.trained_at)}</p>
                 </div>
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">model_ready</p>
+                  <p className="text-xs text-slate-500">Hazir mi</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">{String(modelQuery.data?.model_ready ?? false)}</p>
                 </div>
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">girdi_kaynagi</p>
+                  <p className="text-xs text-slate-500">Girdi kaynagi</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">IoT + Video API</p>
                 </div>
                 <div className="rounded-md bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">tahmin_ufku</p>
+                  <p className="text-xs text-slate-500">Tahmin ufku</p>
                   <p className="mt-1 truncate text-sm font-semibold text-slate-950">60 dakika</p>
                 </div>
               </div>
@@ -327,77 +327,92 @@ export function MlAnalyticsPage() {
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">risk_score</p>
+                    <p className="text-xs text-slate-500">Risk skoru</p>
                     <p className="mt-1 text-2xl font-semibold text-slate-950">{selectedPrediction.risk_score}</p>
                   </div>
                   <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">predicted_temperature</p>
+                    <p className="text-xs text-slate-500">Tahmini sicaklik</p>
                     <p className="mt-1 text-2xl font-semibold text-slate-950">
                       {selectedPrediction.predicted_temperature.toFixed(1)} C
                     </p>
                   </div>
                   <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">predicted_crowd</p>
+                    <p className="text-xs text-slate-500">Tahmini kalabalik</p>
                     <div className="mt-2">
                       <CrowdBadge level={selectedPrediction.predicted_crowd_level} />
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 rounded-md bg-sky-50 px-3 py-2 text-sm leading-6 text-sky-900">
-                  {selectedPrediction.recommendation}
-                </p>
+                <div className="mt-4 rounded-md bg-sky-50 px-3 py-2 text-sm leading-6 text-sky-900">
+                  <p className="text-xs font-semibold text-sky-700">Oneri</p>
+                  <p className="mt-1">{selectedPrediction.recommendation}</p>
+                </div>
               </div>
 
               <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                <h2 className="text-base font-semibold text-slate-950">Model girdisi</h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">IoT sicaklik</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {selectedPrediction.input_summary.temperature.toFixed(1)} C
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-base font-semibold text-slate-950">Model girdisi</h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Tahmin, secili bolgenin IoT sensorleri ve video analizinden uretildi.
                     </p>
                   </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">IoT AQI</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {selectedPrediction.input_summary.air_quality_index}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">IoT trafik</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {selectedPrediction.input_summary.traffic_level}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Video kalabalik</p>
-                    <div className="mt-1">
-                      <CrowdBadge level={selectedPrediction.input_summary.crowd_level} />
+                  <StatusBadge level={selectedPrediction.risk_level} />
+                </div>
+
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700">IoT sensor ozeti</h3>
+                    <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Sicaklik</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-950">
+                          {selectedPrediction.input_summary.temperature.toFixed(1)} C
+                        </p>
+                      </div>
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Hava kalitesi</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-950">
+                          AQI {selectedPrediction.input_summary.air_quality_index}
+                        </p>
+                      </div>
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Trafik seviyesi</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-950">
+                          {selectedPrediction.input_summary.traffic_level}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Video kisi</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {selectedPrediction.input_summary.people_count}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Video arac</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-950">
-                      {selectedPrediction.input_summary.vehicle_count}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">Video hareket</p>
-                    <p className="mt-1 text-sm font-semibold capitalize text-slate-950">
-                      {selectedPrediction.input_summary.motion_level}
-                    </p>
-                  </div>
-                  <div className="rounded-md bg-slate-50 p-3">
-                    <p className="text-xs text-slate-500">risk_level</p>
-                    <p className="mt-1 text-sm font-semibold capitalize text-slate-950">
-                      {selectedPrediction.risk_level}
-                    </p>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700">Video analiz ozeti</h3>
+                    <div className="mt-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Kalabalik seviyesi</p>
+                        <div className="mt-1">
+                          <CrowdBadge level={selectedPrediction.input_summary.crowd_level} />
+                        </div>
+                      </div>
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Kisi sayisi</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-950">
+                          {selectedPrediction.input_summary.people_count}
+                        </p>
+                      </div>
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Arac sayisi</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-950">
+                          {selectedPrediction.input_summary.vehicle_count}
+                        </p>
+                      </div>
+                      <div className="rounded-md bg-slate-50 p-3">
+                        <p className="text-xs text-slate-500">Hareket seviyesi</p>
+                        <p className="mt-1 text-sm font-semibold capitalize text-slate-950">
+                          {selectedPrediction.input_summary.motion_level}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -327,6 +327,35 @@ Smoke test sonucu:
 | Rekognition video result | `cam_meydan_01`, `recognition_labels` dolu |
 | ML Lambda prediction | `5` bolge icin prediction yazildi |
 
+2026-05-31 Chrome smoke revizyonu:
+
+| Kontrol | Sonuc |
+| --- | --- |
+| Frontend AWS build | `npm run build:aws`; bundle API base path'leri `/api/iot`, `/api/video`, `/api/ml` |
+| CloudFront invalidation | `I3NLUWQKG3C90RXEPY3GUHEDUY`, `Completed` |
+| Dashboard | Chrome'da `h1=Dashboard`, API hata mesaji yok, 5 bolge gorunuyor |
+| IoT ekranı | Hastane, Kampus, Meydan, Otogar ve Sanayi icin son sensor olcumleri gorunuyor |
+| Video ekranı | 5 kamera listeleniyor; kamera stream'leri `synthetic_cam_<camera_id>.webm` olarak ayrildi |
+| Video player | Chrome'da `readyState=4`, `error=null` |
+| ML Analytics | Model/veri hatti, karar ozeti, IoT sensor ozeti ve video analiz ozeti gorunuyor |
+| Console | Dashboard, IoT, Video ve ML rotalarinda app console error yok |
+
+Bu revizyonda frontend'in yanlislikla `localhost:8001/8002/8003`
+endpointlerine derlenmesi duzeltildi. AWS deploy icin `build:aws` script'i
+kullanilmalidir.
+
+2026-05-31 video canli akis revizyonu:
+
+| Kontrol | Sonuc |
+| --- | --- |
+| Video image digest | `sha256:4ffa2664d2a8fcd9bc0e24064c1095fa83f02ef38e2d035af56fd519b487ec46` |
+| ECS Video service | Force deploy sonrasi `desired=1`, `running=1`, `pending=0`, rollout `COMPLETED` |
+| Stream metadata | `/api/video/cameras/cam_meydan_01/stream` artik `live_synthetic_cam_meydan_01_mjpeg` donuyor |
+| Canli stream endpoint | `/api/video/cameras/cam_meydan_01/live.mjpg`, `multipart/x-mixed-replace; boundary=frame` |
+| Chrome Video smoke | `<img src=".../live.mjpg">`, `naturalWidth=960`, `naturalHeight=540`, `<video>` yok |
+| Gorsel revizyon | Test pattern kaldirildi; yol, araclar, yayalar ve `CANLI` kamera overlay'i olan sentetik sehir sahnesi kullaniliyor |
+| Frontend invalidation | `INUOSNHWJRM891GHNKE415Y5O`, `Completed` |
+
 Aktif public URL:
 
 ```text

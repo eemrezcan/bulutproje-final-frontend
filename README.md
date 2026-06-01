@@ -23,3 +23,9 @@ Compose dosyasi sibling servis repolarini referanslar:
 - `../bulutproje4-video-analysis-service`
 - `../bulutproje5-ml-analytics-service`
 
+## Dokumantasyon
+
+- AWS deploy runbook: `docs/aws-deployment-runbook.md`
+- Deploy karar plani: `docs/deployment-plan.md`
+- Demo video rehberi: `docs/demo-video-guide.md`
+- Mikroservis rapor sablonlari: `docs/reports/`

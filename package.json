@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:aws": "VITE_IOT_API_URL=/api/iot VITE_VIDEO_API_URL=/api/video VITE_ML_API_URL=/api/ml npm run build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
@@ -36,4 +37,3 @@
     "vite": "^5.4.0"
   }
 }
-
