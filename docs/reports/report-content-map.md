@@ -61,16 +61,19 @@ Demo Video Linki:
 Rapor uretilirken ilgili mikroservis raporunda sadece frontend repo linki ve o
 mikroservis repo linki gosterilecek. Demo video linki su an bos kalacak.
 
-## Chrome ile Alinacak Gorseller
+## Rapor Gorselleri
 
-Rapor uretiminden once Chrome uzerinden ekran goruntuleri alinacak.
+Rapor uretiminden once canli CloudFront deployment uzerinden ekran
+goruntuleri alinacak. Dashboard, IoT ve Video gorselleri Chrome eklentisiyle
+dogrulandi; ML sayfasi Chrome eklentisinde ekran goruntusu komutunda zaman
+asimina dustugu icin ayni canli URL Codex'in yerlesik tarayicisinda yakalandi.
 
 | Dosya Adi | Rota | Rapor |
 | --- | --- | --- |
-| `dashboard-overview.png` | `/dashboard` | Ortak baglam |
-| `iot-readings.png` | `/iot` | IoT |
-| `video-live-feed.png` | `/video` | Video |
-| `ml-risk-summary.png` | `/ml` | ML |
+| `dashboard-overview.jpg` | `/dashboard` | Ortak baglam |
+| `iot-readings.jpg` | `/iot` | IoT |
+| `video-live-feed.jpg` | `/video` | Video |
+| `ml-risk-summary.jpg` | `/ml` | ML |
 
 Gorseller final raporlarda kanit amacli kullanilacak; gorsel sayisi rapor
 akisini bozmayacak sekilde sinirli tutulacak.

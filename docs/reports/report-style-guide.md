@@ -17,7 +17,7 @@ korunur.
 | Cikti | DOCX kaynak + PDF teslim kopyasi |
 | Sayfa boyutu | Letter veya A4; DOCX render sonucuna gore tek karar verilecek |
 | Kolon yapisi | Tek kolon |
-| Hedef uzunluk | Her rapor icin 10-14 sayfa |
+| Hedef uzunluk | Her rapor icin 8-10 sayfa |
 | Stil | Akademik, teknik, sade |
 | Gorsel yogunlugu | Her raporda 1 mimari diyagram, 1 ekran goruntusu, 2-4 tablo |
 | Teslim tarihi | Kapakta yer almayacak |
@@ -65,7 +65,7 @@ Her rapor su ana yapiyi izler:
 3. Ozet
 4. Anahtar Kelimeler
 5. Giris
-6. Proje Gereksinimi ve PDF Beklentisiyle Uyum
+6. Kapsam
 7. Mikroservis Amaci ve Kapsami
 8. Kullanilan Teknolojiler
 9. Sistem Mimarisi
@@ -86,7 +86,7 @@ Her raporda asagidaki tablo tiplerinden uygun olanlar kullanilir:
 
 | Tablo Tipi | Amac |
 | --- | --- |
-| Gereksinim Eslesmesi | Ders PDF'indeki beklentinin projedeki karsiligini gosterir |
+| Kapsam Eslesmesi | Ders final yonergesindeki beklentinin projedeki karsiligini gosterir |
 | Teknoloji Tablosu | Kullanilan teknolojileri ve nedenlerini ozetler |
 | Endpoint Tablosu | API yuzeyini okunur hale getirir |
 | Local-AWS Karsilik Tablosu | Local demo ile AWS deploy mimarisini baglar |
